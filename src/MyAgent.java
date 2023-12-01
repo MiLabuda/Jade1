@@ -8,8 +8,12 @@ import jade.domain.FIPAAgentManagement.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.HashMap;
 
 public class MyAgent extends Agent {
+	// HashMap to store the correspondence between word and translation
+	HashMap<String, String> translationMap = new HashMap<>();
+
 	protected void setup () {
 		displayResponse("Hello, I am " + getAID().getLocalName());
 		addBehaviour(new MyCyclicBehaviour(this));
@@ -21,6 +25,18 @@ public class MyAgent extends Agent {
 	public void displayResponse(String message) {
 		JOptionPane.showMessageDialog(null,message,"Message",JOptionPane.PLAIN_MESSAGE);
 	}
+
+	void displayTranslationHtml(String originalWord, String translation) {
+		// Format the translation information as HTML
+		String htmlContent = "<html><body>" +
+				"<p><b>Original Word:</b> " + originalWord + "</p>" +
+				"<p><b>Translation:</b> " + translation + "</p>" +
+				"<hr></body></html>";
+
+		// Display the HTML content
+		displayHtmlResponse(htmlContent);
+	}
+
 	public void displayHtmlResponse(String html) {
 		JTextPane tp = new JTextPane();
 		JScrollPane js = new JScrollPane();
@@ -37,6 +53,7 @@ public class MyAgent extends Agent {
 }
 
 class MyCyclicBehaviour extends CyclicBehaviour {
+
 	MyAgent myAgent;
 	public MyCyclicBehaviour(MyAgent myAgent) {
 		this.myAgent = myAgent;
@@ -64,10 +81,14 @@ class MyCyclicBehaviour extends CyclicBehaviour {
 					{
 						String foundAgent = result[0].getName().getLocalName();
 						myAgent.displayResponse("Agent " + foundAgent + " is a service provider. Sending message to " + foundAgent);
+
+						String requestId = "" + System.currentTimeMillis();
+						myAgent.translationMap.put(requestId, content);
 						ACLMessage forward = new ACLMessage(ACLMessage.REQUEST);
 						forward.addReceiver(new AID(foundAgent, AID.ISLOCALNAME));
 						forward.setContent(content);
 						forward.setOntology(ontology);
+						forward.setReplyWith(requestId);  // Set a unique identifier for the request
 						myAgent.send(forward);
 					}
 				}
@@ -79,8 +100,17 @@ class MyCyclicBehaviour extends CyclicBehaviour {
 			}
 			else
 			{	//when it is an answer
-				myAgent.displayHtmlResponse(content);
+
+				String requestId = message.getInReplyTo();
+				String translation = message.getContent();
+				String originalWord = myAgent.translationMap.get(requestId);
+
+				myAgent.displayTranslationHtml(originalWord, translation);
+				// Remove the entry from the map
+				myAgent.translationMap.remove(requestId);
+
 			}
 		}
 	}
+
 }

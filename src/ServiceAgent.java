@@ -14,32 +14,38 @@ public class ServiceAgent extends Agent {
 		DFAgentDescription dfad = new DFAgentDescription();
 		dfad.setName(getAID());
 		//service no 1
-		ServiceDescription sd1 = new ServiceDescription();
-		sd1.setType("answers");
-		sd1.setName("wordnet");
-		//service no 2
-		ServiceDescription sd2 = new ServiceDescription();
-		sd2.setType("answers");
-		sd2.setName("dictionary");
-		//service no 3
-		ServiceDescription sd3 = new ServiceDescription();
-		sd3.setType("answers");
-		sd3.setName("computingDictionary");
+//		ServiceDescription sd1 = new ServiceDescription();
+//		sd1.setType("answers");
+//		sd1.setName("wordnet");
+//		//service no 2
+//		ServiceDescription sd2 = new ServiceDescription();
+//		sd2.setType("answers");
+//		sd2.setName("dictionary");
+//		//service no 3
+//		ServiceDescription sd3 = new ServiceDescription();
+//		sd3.setType("answers");
+//		sd3.setName("computingDictionary");
+
+		ServiceDescription sd4 = new ServiceDescription();
+		sd4.setType("answers");
+		sd4.setName("qwerty");
 
 		//add them all
-		dfad.addServices(sd1);
-		dfad.addServices(sd2);
-		dfad.addServices(sd3);
+//		dfad.addServices(sd1);
+//		dfad.addServices(sd2);
+//		dfad.addServices(sd3);
+		dfad.addServices(sd4);
 
 		try {
 			DFService.register(this,dfad);
 		} catch (FIPAException ex) {
 			ex.printStackTrace();
 		}
-		
-		addBehaviour(new WordnetCyclicBehaviour(this));
-		addBehaviour(new DictionaryCyclicBehaviour(this));
-		addBehaviour(new ComputingDictionaryCyclicBehaviour(this));
+
+//		addBehaviour(new WordnetCyclicBehaviour(this));
+//		addBehaviour(new DictionaryCyclicBehaviour(this));
+//		addBehaviour(new ComputingDictionaryCyclicBehaviour(this));
+		addBehaviour(new GeneralDictionaryCyclicBehaviour(this));
 		//doDelete();
 	}
 	protected void takeDown() {
@@ -186,6 +192,44 @@ class ComputingDictionaryCyclicBehaviour extends CyclicBehaviour
 			try
 			{
 				response = agent.makeRequest("foldoc", content);
+			}
+			catch (NumberFormatException ex)
+			{
+				response = ex.getMessage();
+			}
+			reply.setContent(response);
+			System.out.println(response);
+			agent.send(reply);
+		}
+	}
+}
+
+class GeneralDictionaryCyclicBehaviour extends CyclicBehaviour
+{
+	ServiceAgent agent;
+	public GeneralDictionaryCyclicBehaviour(ServiceAgent agent)
+	{
+		this.agent = agent;
+	}
+	public void action()
+	{
+//		MessageTemplate template = MessageTemplate.MatchOntology("qwerty");
+		ACLMessage message = agent.receive();
+		if (message == null)
+		{
+			block();
+		}
+		else
+		{
+			//process the incoming message
+			String content = message.getContent();
+			String ontology = message.getOntology();
+			ACLMessage reply = message.createReply();
+			reply.setPerformative(ACLMessage.INFORM);
+			String response = "";
+			try
+			{
+				response = agent.makeRequest(ontology, content);
 			}
 			catch (NumberFormatException ex)
 			{

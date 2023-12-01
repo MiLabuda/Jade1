@@ -17,23 +17,23 @@ import java.net.URLEncoder;
 
 public class ComputingAgent extends Agent {
     protected void setup () {
-//        //services registration at DF
-//        DFAgentDescription dfad = new DFAgentDescription();
-//        dfad.setName(getAID());
-//
-//        //service no 3
-//        ServiceDescription sd3 = new ServiceDescription();
-//        sd3.setType("answers");
-//        sd3.setName("compDictionary");
-//
-//        //add them all
-//        dfad.addServices(sd3);
-//
-//        try {
-//            DFService.register(this,dfad);
-//        } catch (FIPAException ex) {
-//            ex.printStackTrace();
-//        }
+        //services registration at DF
+        DFAgentDescription dfad = new DFAgentDescription();
+        dfad.setName(getAID());
+
+        //service no 3
+        ServiceDescription sd3 = new ServiceDescription();
+        sd3.setType("answers");
+        sd3.setName("compDictionary");
+
+        //add them all
+        dfad.addServices(sd3);
+
+        try {
+            DFService.register(this,dfad);
+        } catch (FIPAException ex) {
+            ex.printStackTrace();
+        }
 
         addBehaviour(new CompDictionaryCyclicBehaviour(this));
         //doDelete();
